@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>بروفايل</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"></head>
+<body><div class="wrap" id="app"></div>
+<script src="app.js"></script>
+<script>
+var id=new URLSearchParams(location.search).get("id"),p=store.get(id),a=document.getElementById("app");
+var N={facebook:"فيسبوك",x:"إكس",linkedin:"لينكد إن",instagram:"إنستجرام",youtube:"يوتيوب",tiktok:"تيك توك"};
+function report(){if(confirm("الإبلاغ عن هذا الملف؟")){p.reports=(p.reports||0)+1;store.put(p);alert("تم إرسال البلاغ للمشرف")}}
+function share(){var u=location.href;if(navigator.clipboard)navigator.clipboard.writeText(u).then(function(){alert("تم نسخ الرابط")});else prompt("انسخ الرابط",u)}
+function draw(){
+ var isP=p.type=="p",all=store.all();
+ var lk=Object.keys(p.links||{}).map(function(k){return '<a class="chip" href="'+esc(safeUrl(p.links[k]))+'" target="_blank" rel="noopener noreferrer">'+(N[k]||k)+'</a>'}).join("");
+ var staff=!isP?all.filter(function(x){return x.type=="p"&&x.org==p.name}):[];
+ var rel=all.filter(function(x){return x.id!=p.id&&x.cat==p.cat}).slice(0,4);
+ var f=favs().indexOf(p.id)>-1;
+ a.innerHTML='<div class="pf"><div class="side"><div class="av'+(isP?"":" co")+'">'+av(p)+'</div><h2 style="margin:0">'+esc(p.name)+(p.verified?' <span class="vb" title="موثق">✔</span>':'')+'</h2><div class="m">'+esc(p.en)+'</div><p>'+esc(p.job)+'</p><span class="chip">'+esc(p.country)+'</span><span class="chip">'+esc(p.cat)+'</span><div class="m">👁 '+(p.views||0)+' زيارة</div>'+
+ '<div class="acts"><button onclick="share()">مشاركة</button><button class="g" onclick="toggleFav(p.id)">'+(f?"★ مفضلة":"☆ مفضلة")+'</button><button class="g" onclick="print()">طباعة</button><a class="btn g" href="add.html?id='+encodeURIComponent(p.id)+'">تعديل</a><button class="g" onclick="report()">إبلاغ</button></div></div><div>'+
+ '<div class="box"><h3>معلومات</h3><p>'+(isP?'الجنسية: '+esc(p.nat)+'<br>':'')+'البلد: '+esc(p.country)+(p.year?'<br>'+(isP?'سنة الميلاد: ':'سنة التأسيس: ')+esc(p.year):'')+(p.org?'<br>جهة العمل: '+esc(p.org):'')+'</p></div>'+
+ '<div class="box"><h3>'+(isP?"السيرة":"نبذة")+'</h3><p>'+esc(p.bio||"لا توجد نبذة بعد.")+'</p></div>'+
+ ((lk||p.site)?'<div class="box"><h3>الروابط</h3>'+(p.site?'<a class="chip" href="'+esc(safeUrl(p.site))+'" target="_blank" rel="noopener noreferrer">الموقع</a>':'')+lk+'</div>':'')+
+ (staff.length?'<div class="box"><h3>الأشخاص</h3><div class="grid">'+staff.map(card).join("")+'</div></div>':'')+
+ (rel.length?'<div class="box"><h3>ذات صلة</h3><div class="grid">'+rel.map(card).join("")+'</div></div>':'')+'</div></div>';
+}
+window.draw=draw;
+if(!p){a.innerHTML='<p class="m">غير موجود.</p>'}else{document.title=p.name;p.views=(p.views||0)+1;store.put(p);draw()}
+</script></body></html>

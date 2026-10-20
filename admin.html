@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>لوحة المشرف</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"></head>
+<body><div class="wrap" id="app"></div>
+<script src="app.js"></script>
+<script>
+var a=document.getElementById("app");
+if(sessionStorage.getItem("adm")!="1"){var p=prompt("رمز المشرف");if(p===ADMIN_PIN)sessionStorage.setItem("adm","1");else location.href="index.html"}
+function toggleV(id){var o=store.get(id);o.verified=!o.verified;store.put(o);draw()}
+function rm(id){if(confirm("حذف؟")){store.del(id);draw()}}
+function clr(id){var o=store.get(id);o.reports=0;store.put(o);draw()}
+function exp(){var b=new Blob([JSON.stringify(store.all(),null,1)],{type:"application/json"}),l=document.createElement("a");l.href=URL.createObjectURL(b);l.download="wajh-backup.json";l.click()}
+function imp(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var d=JSON.parse(r.result);if(!Array.isArray(d))throw 0;store.save(d);draw()}catch(x){alert("ملف غير صالح")}};r.readAsText(f)}
+function reset(){if(confirm("مسح كل البيانات والرجوع للبيانات التجريبية؟")){localStorage.removeItem(KEY);draw()}}
+function draw(){var L=store.all().sort(function(x,y){return (y.reports||0)-(x.reports||0)});
+ a.innerHTML='<h2 class="s">لوحة المشرف ('+L.length+')</h2><div class="acts" style="justify-content:flex-start"><button onclick="exp()">تصدير JSON</button><label class="btn g">استيراد<input type="file" accept=".json" hidden onchange="imp(event)"></label><button class="d" onclick="reset()">إعادة ضبط</button></div><br><div class="tw"><table><tr><th>الاسم</th><th>النوع</th><th>التصنيف</th><th>زيارات</th><th>بلاغات</th><th>توثيق</th><th></th></tr>'+
+ L.map(function(o){return '<tr><td><a href="profile.html?id='+encodeURIComponent(o.id)+'">'+esc(o.name)+'</a></td><td>'+(o.type=="c"?"مؤسسة":"شخص")+'</td><td>'+esc(o.cat)+'</td><td>'+(o.views||0)+'</td><td>'+(o.reports||0)+((o.reports||0)?' <a href="#" onclick="clr(\''+o.id+'\');return false">تصفير</a>':'')+'</td><td><button class="g" onclick="toggleV(\''+o.id+'\')">'+(o.verified?"إلغاء ✔":"توثيق")+'</button></td><td><a href="add.html?id='+encodeURIComponent(o.id)+'">تعديل</a> · <a href="#" onclick="rm(\''+o.id+'\');return false">حذف</a></td></tr>'}).join("")+'</table></div>';
+}
+draw();
+</script></body></html>

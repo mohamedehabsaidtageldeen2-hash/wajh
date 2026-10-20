@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>إضافة / تعديل</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"></head>
+<body><div class="wrap">
+<form id="f">
+<h2 style="margin:0" id="ttl">إضافة جديدة</h2>
+<fieldset><legend>النوع</legend><select id="type" onchange="ui()"><option value="p">شخصية</option><option value="c">مؤسسة</option></select></fieldset>
+<fieldset><legend>الصورة / الشعار</legend><input type="file" id="photo" accept="image/png,image/jpeg"><div class="m">سيتم تصغيرها تلقائيًا. <a href="#" id="rmph">حذف الصورة</a></div></fieldset>
+<fieldset><legend>معلومات عامة</legend>
+<div class="two"><div><label>الاسم بالعربية *</label><input id="name" required></div><div><label>الاسم بالإنجليزية</label><input id="en"></div></div>
+<div class="two"><div><label id="jl">المهنة الحالية *</label><input id="job" required></div><div id="orgw"><label>جهة العمل</label><input id="org"></div></div>
+<div class="two" id="pw"><div><label>الجنس</label><select id="gender"><option>ذكر</option><option>أنثى</option></select></div><div><label>الجنسية</label><input id="nat"></div></div>
+<div class="two"><div><label>بلد الإقامة / المقر</label><input id="country"></div><div><label id="yl">سنة الميلاد</label><input id="year" type="number" min="1800" max="2026"></div></div>
+<div><label>التصنيف *</label><select id="cat" required></select></div>
+</fieldset>
+<fieldset><legend>نبذة</legend><textarea id="bio" rows="5"></textarea></fieldset>
+<fieldset><legend>الروابط</legend>
+<input id="site" placeholder="الموقع الإلكتروني https://…"><br><br>
+<div class="two"><input id="facebook" placeholder="فيسبوك https://…"><input id="x" placeholder="إكس https://…"></div><br>
+<div class="two"><input id="linkedin" placeholder="لينكد إن https://…"><input id="instagram" placeholder="إنستجرام https://…"></div><br>
+<div class="two"><input id="youtube" placeholder="يوتيوب https://…"><input id="tiktok" placeholder="تيك توك https://…"></div>
+</fieldset>
+<div class="m" id="msg">انشر معلومات حقيقية فقط ولا تنشر بيانات خاصة بغيرك دون إذنه.</div>
+<div class="acts" style="justify-content:flex-start"><button type="submit">حفظ</button><a class="btn g" href="index.html">إلغاء</a><button type="button" class="d" id="del" hidden>حذف</button></div>
+</form></div>
+<script src="app.js"></script>
+<script>
+var $=function(i){return document.getElementById(i)},id=new URLSearchParams(location.search).get("id"),cur=null,photo="";
+var LK=["facebook","x","linkedin","instagram","youtube","tiktok"];
+$("cat").innerHTML=CATS.map(function(c){return "<option>"+c+"</option>"}).join("");
+function ui(){var p=$("type").value=="p";$("pw").hidden=!p;$("orgw").hidden=!p;$("jl").textContent=p?"المهنة الحالية *":"نشاط المؤسسة *";$("yl").textContent=p?"سنة الميلاد":"سنة التأسيس"}
+if(id){cur=store.get(id);if(cur){$("ttl").textContent="تعديل: "+cur.name;$("del").hidden=false;photo=cur.photo||"";
+ ["type","name","en","job","org","gender","nat","country","year","cat","bio","site"].forEach(function(k){if(cur[k]!=null&&$(k))$(k).value=cur[k]});
+ LK.forEach(function(k){if(cur.links&&cur.links[k])$(k).value=cur.links[k]})}}
+ui();
+$("rmph").onclick=function(e){e.preventDefault();photo=""};
+$("photo").onchange=function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){var i=new Image();i.onload=function(){var s=Math.min(300/Math.max(i.width,i.height),1),c=document.createElement("canvas");c.width=i.width*s;c.height=i.height*s;c.getContext("2d").drawImage(i,0,0,c.width,c.height);photo=c.toDataURL("image/jpeg",.8)};i.src=r.result};r.readAsDataURL(f)};
+$("del").onclick=function(){if(confirm("حذف نهائي؟")){store.del(id);location.href="index.html"}};
+$("f").onsubmit=function(e){e.preventDefault();
+ var v=function(i){return $(i).value.trim()},links={},bad=false;
+ LK.concat(["site"]).forEach(function(k){var l=v(k);if(l&&!/^https?:\/\//i.test(l))bad=true});
+ if(bad){$("msg").textContent="كل الروابط لازم تبدأ بـ https://";return}
+ LK.forEach(function(k){if(v(k))links[k]=v(k)});
+ var o=Object.assign({},cur||{},{id:cur?cur.id:String(Date.now()),type:v("type"),name:v("name"),en:v("en"),job:v("job"),org:v("org"),gender:v("gender"),nat:v("nat"),country:v("country"),year:v("year"),cat:v("cat"),bio:v("bio"),site:v("site"),links:links,photo:photo});
+ if(!cur){o.verified=false;o.views=0;o.created=Date.now();o.reports=0}
+ try{store.put(o);location.href="profile.html?id="+o.id}catch(err){$("msg").textContent="المساحة ممتلئة، جرّب صورة أصغر."}};
+</script></body></html>

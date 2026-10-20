@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>وجوه | دليل الشخصيات والمؤسسات</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<div class="hero"><div class="wrap"><h1>تحكم بما يعرفه الناس عنك</h1><p id="cnt"></p>
+<input id="q" placeholder="ابحث بالاسم أو المهنة أو الجهة…" oninput="reset()"></div></div>
+<div class="wrap">
+<div class="bar">
+<select id="type" onchange="reset()"><option value="">الكل</option><option value="p">الأشخاص</option><option value="c">المؤسسات</option></select>
+<select id="cat" onchange="reset()"></select>
+<select id="country" onchange="reset()"></select>
+<select id="sort" onchange="reset()"><option value="views">الأكثر زيارة</option><option value="new">الأحدث</option><option value="name">الاسم</option></select>
+<select id="ver" onchange="reset()"><option value="">الكل</option><option value="1">الموثقون فقط</option></select>
+</div>
+<div class="grid" id="all"></div>
+<p style="text-align:center"><button id="more" class="g" onclick="PAGE++;draw()">عرض المزيد</button></p>
+</div>
+<script src="app.js"></script>
+<script>
+var PAGE=1,SIZE=12,P=load(),$=function(i){return document.getElementById(i)},U=new URLSearchParams(location.search);
+$("cat").innerHTML='<option value="">كل التصنيفات</option>'+CATS.map(function(c){return "<option>"+c+"</option>"}).join("");
+var cs=[];P.forEach(function(p){if(p.country&&cs.indexOf(p.country)<0)cs.push(p.country)});
+$("country").innerHTML='<option value="">كل الدول</option>'+cs.map(function(c){return "<option>"+esc(c)+"</option>"}).join("");
+if(U.get("type"))$("type").value=U.get("type");
+function reset(){PAGE=1;draw()}
+function draw(){
+ var q=$("q").value.trim().toLowerCase(),t=$("type").value,c=$("cat").value,k=$("country").value,v=$("ver").value,f=favs(),onlyFav=U.get("fav")=="1";
+ var L=P.filter(function(p){return (!t||p.type==t)&&(!c||p.cat==c)&&(!k||p.country==k)&&(!v||p.verified)&&(!onlyFav||f.indexOf(p.id)>-1)&&(!q||[p.name,p.en,p.job,p.org,p.bio].join(" ").toLowerCase().indexOf(q)>-1)});
+ var s=$("sort").value;
+ L.sort(function(a,b){return s=="name"?a.name.localeCompare(b.name,"ar"):s=="new"?(b.created||0)-(a.created||0):(b.views||0)-(a.views||0)});
+ $("cnt").textContent=(onlyFav?"مفضلتك: ":"")+L.length+" نتيجة من "+P.length;
+ $("all").innerHTML=L.slice(0,PAGE*SIZE).map(card).join("")||'<p class="m">لا نتائج.</p>';
+ $("more").hidden=L.length<=PAGE*SIZE;
+}
+draw();
+</script></body></html>
